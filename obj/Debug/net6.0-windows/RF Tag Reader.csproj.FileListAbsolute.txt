@@ -1,0 +1,24 @@
+z:\교육\PGM\RF Tag Reader\bin\Debug\net6.0-windows\RF Tag Reader.exe
+Z:\교육\PGM\RF Tag Reader\bin\Debug\net6.0-windows\RF Tag Reader.deps.json
+Z:\교육\PGM\RF Tag Reader\bin\Debug\net6.0-windows\RF Tag Reader.runtimeconfig.json
+z:\교육\PGM\RF Tag Reader\bin\Debug\net6.0-windows\RF Tag Reader.dll
+z:\교육\PGM\RF Tag Reader\bin\Debug\net6.0-windows\RF Tag Reader.pdb
+z:\교육\PGM\RF Tag Reader\bin\Debug\net6.0-windows\System.IO.Ports.dll
+z:\교육\PGM\RF Tag Reader\bin\Debug\net6.0-windows\runtimes\linux-arm\native\libSystem.IO.Ports.Native.so
+z:\교육\PGM\RF Tag Reader\bin\Debug\net6.0-windows\runtimes\linux-arm64\native\libSystem.IO.Ports.Native.so
+z:\교육\PGM\RF Tag Reader\bin\Debug\net6.0-windows\runtimes\linux-x64\native\libSystem.IO.Ports.Native.so
+z:\교육\PGM\RF Tag Reader\bin\Debug\net6.0-windows\runtimes\osx-arm64\native\libSystem.IO.Ports.Native.dylib
+z:\교육\PGM\RF Tag Reader\bin\Debug\net6.0-windows\runtimes\osx-x64\native\libSystem.IO.Ports.Native.dylib
+z:\교육\PGM\RF Tag Reader\bin\Debug\net6.0-windows\runtimes\unix\lib\net6.0\System.IO.Ports.dll
+z:\교육\PGM\RF Tag Reader\bin\Debug\net6.0-windows\runtimes\win\lib\net6.0\System.IO.Ports.dll
+z:\교육\PGM\RF Tag Reader\obj\Debug\net6.0-windows\RF Tag Reader.csproj.AssemblyReference.cache
+z:\교육\PGM\RF Tag Reader\obj\Debug\net6.0-windows\RF Tag Reader.GeneratedMSBuildEditorConfig.editorconfig
+z:\교육\PGM\RF Tag Reader\obj\Debug\net6.0-windows\RF Tag Reader.AssemblyInfoInputs.cache
+z:\교육\PGM\RF Tag Reader\obj\Debug\net6.0-windows\RF Tag Reader.AssemblyInfo.cs
+z:\교육\PGM\RF Tag Reader\obj\Debug\net6.0-windows\RF Tag Reader.csproj.CoreCompileInputs.cache
+Z:\교육\PGM\RF Tag Reader\obj\Debug\net6.0-windows\RF Tag R.EDCFD3AA.Up2Date
+z:\교육\PGM\RF Tag Reader\obj\Debug\net6.0-windows\RF Tag Reader.dll
+z:\교육\PGM\RF Tag Reader\obj\Debug\net6.0-windows\refint\RF Tag Reader.dll
+z:\교육\PGM\RF Tag Reader\obj\Debug\net6.0-windows\RF Tag Reader.pdb
+Z:\교육\PGM\RF Tag Reader\obj\Debug\net6.0-windows\RF Tag Reader.genruntimeconfig.cache
+Z:\교육\PGM\RF Tag Reader\obj\Debug\net6.0-windows\ref\RF Tag Reader.dll
