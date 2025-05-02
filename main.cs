@@ -262,10 +262,10 @@ namespace RF_Tag_Reader
             return binary.Insert(4, " "); // 중간에 공백 추가
         }
         public string ByteArrayToBinaryString(byte[] data)
-{
-    if (data.Length != 2) return "0000 0000 0000 0000";
-    return ToBinaryString(data[0]) + " " + ToBinaryString(data[1]);
-}
+        {
+            if (data.Length != 2) return "0000 0000 0000 0000";
+            return ToBinaryString(data[0]) + " " + ToBinaryString(data[1]);
+        }
         public bool W9WKWriteData(byte[] writeData)
         {
             byte[] TxBuf = new byte[100];
@@ -762,7 +762,7 @@ namespace RF_Tag_Reader
             temp = (byte)((((upper & 0x0f)<<4) | (lower & 0x0f)) + 0x00);
             return temp;    
         }
-        private bool M9WK_PageWrite(RFTagPageList pageList, byte[] WriteData)
+        public bool M9WK_PageWrite(RFTagPageList pageList, byte[] WriteData)
         {
              byte[] TxBuf = new byte[100];
             byte[] RxBuf = new byte[100];

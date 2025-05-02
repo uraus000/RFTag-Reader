@@ -142,3 +142,4 @@ Z:\Work\RFTag Reader\obj\Debug\net8.0-windows\refint\RF Tag Reader.dll
 Z:\Work\RFTag Reader\obj\Debug\net8.0-windows\RF Tag Reader.pdb
 Z:\Work\RFTag Reader\obj\Debug\net8.0-windows\RF Tag Reader.genruntimeconfig.cache
 Z:\Work\RFTag Reader\obj\Debug\net8.0-windows\ref\RF Tag Reader.dll
+z:\Work\RFTag Reader\obj\Debug\net8.0-windows\RF Tag Reader.sourcelink.json
