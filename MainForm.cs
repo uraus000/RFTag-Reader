@@ -10,7 +10,7 @@ namespace RF_Tag_Reader
     public partial class MainForm : Form
     {
         Main_cls m_Main = Main_cls.Instance;
-        private string Version = "RF Tag Read V3.0_241227";
+        private string Version = "RF Tag Read V3.0_250507";
         private DateTime AutoReadTimeStamp = DateTime.Now;
         private bool LampSerialChange = false;
         private IDListForm IDLIST = new IDListForm();
@@ -266,7 +266,6 @@ namespace RF_Tag_Reader
                 }
                 else if(sender == InitTime)
                 {
-                    
                     if(!MessageBoxchk.Checked)
                     {
                         if(MessageBox.Show("초기화를 진행하시겠습니까?","Warning", MessageBoxButtons.YesNo)!=DialogResult.Yes)
@@ -279,6 +278,98 @@ namespace RF_Tag_Reader
                     }
                     else
                     {
+                        if(m_Main.RFTag == Main_cls.RFTagTypeList.M9WK)
+                        {
+                            int Serial = (int)((m_Main.M9WK_PageReadData[(int)Main_cls.RFTagPageList.Page08,0]<<8) | (m_Main.M9WK_PageReadData[(int)Main_cls.RFTagPageList.Page08,1]));
+                            for(int i =0;i<m_Main.SerialListData.Count;i++)
+                            {
+                                if((Serial == ((m_Main.SerialListData[i].RFSerial[1] << 8) |m_Main.SerialListData[i].RFSerial[0])) && (m_Main.SerialListData[i].RFType == Main_cls.RFTagTypeList.M9WK))
+                                {
+                                    string MessageStr = "[" + m_Main.SerialListData[i].LampSerial + "]  " + m_Main.SerialListData[i].SuppliedDate.ToString("yy.MM.dd")
+                                                       + "\r\n출하한 제품과 Serial이 중폭됩니다.\r\nSerial 변경을 진행하시겠습니까?";
+                                    if(MessageBox.Show(MessageStr,"Warning", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                                    {
+                                        byte[] tempdata = new byte[m_Main.M9WK_PageReadData.GetLength(1)];
+                                        for(int k=0;k<m_Main.M9WK_PageReadData.GetLength(1);k++)
+                                        {
+                                            tempdata[k] = m_Main.M9WK_PageReadData[(int)Main_cls.RFTagPageList.Page08,k];
+                                        }
+                                        bool randomflag = false;
+                                        Random random = new Random();
+                                        int tempserial = 0x00;
+                                        do
+                                        {
+                                            randomflag = false;
+                                            tempserial = random.Next(100, 0xffff);
+                                            tempserial &= 0xff0f;
+                                            tempserial |= (Serial & 0x00f0);
+                                            for(int l=0;l<m_Main.SerialListData.Count;l++)
+                                            {
+                                                if(tempserial == ((m_Main.SerialListData[i].RFSerial[1] << 8) |m_Main.SerialListData[i].RFSerial[0]))
+                                                {
+                                                    randomflag = true;
+                                                }
+                                            }
+                                        }while(randomflag);
+
+                                        tempdata[0] = (byte)((tempserial & 0xff00)>>8);
+                                        tempdata[1] = (byte)((tempserial & 0x00ff)>>0);
+
+                                        m_Main.M9WK_PageWrite(Main_cls.RFTagPageList.Page08,tempdata);
+                                        richTextBox.Text += "\r\nSerial이 변경되었습니다\r\n";
+                                        richTextBox.Text += Serial.ToString("X4") + "->" + tempserial.ToString("X4") + "\r\n\r\n";
+                                        m_Main.ReadTageData(ref richTextBox);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        else if(m_Main.RFTag == Main_cls.RFTagTypeList.W9WK)
+                        {
+                            int Serial = (int)((m_Main.W9Wk_ReadData[0]<<8) | (m_Main.W9Wk_ReadData[1]));
+                            for(int i =0;i<m_Main.SerialListData.Count;i++)
+                            {
+                                if((Serial == ((m_Main.SerialListData[i].RFSerial[1] << 8) |m_Main.SerialListData[i].RFSerial[0])) && (m_Main.SerialListData[i].RFType == Main_cls.RFTagTypeList.W9WK))
+                                {
+                                    string MessageStr = "[" + m_Main.SerialListData[i].LampSerial + "]  " + m_Main.SerialListData[i].SuppliedDate.ToString("yy.MM.dd")
+                                                       + "\r\n출하한 제품과 Serial이 중폭됩니다.\r\nSerial 변경을 진행하시겠습니까?";
+                                    if(MessageBox.Show(MessageStr,"Warㅜing", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                                    {
+                                        byte[] tempdata = new byte[m_Main.W9Wk_ReadData.GetLength(0)];
+                                        for(int k=0;k<m_Main.W9Wk_ReadData.GetLength(0);k++)
+                                        {
+                                            tempdata[k] = m_Main.W9Wk_ReadData[k];
+                                        }
+                                        bool randomflag = false;
+                                        Random random = new Random();
+                                        int tempserial = 0x00;
+                                        do
+                                        {
+                                            randomflag = false;
+                                            tempserial = random.Next(100, 0xffff);
+                                            tempserial &= 0xff0f;
+                                            tempserial |= (Serial & 0x00f0);
+                                            for(int l=0;l<m_Main.SerialListData.Count;l++)
+                                            {
+                                                if(tempserial == ((m_Main.SerialListData[i].RFSerial[1] << 8) |m_Main.SerialListData[i].RFSerial[0]))
+                                                {
+                                                    randomflag = true;
+                                                }
+                                            }
+                                        }while(randomflag);
+
+                                        tempdata[0] = (byte)((tempserial & 0xff00)>>8);
+                                        tempdata[1] = (byte)((tempserial & 0x00ff)>>0);
+
+                                        m_Main.W9WKWriteData(tempdata);
+                                        richTextBox.Text += "\r\nSerial이 변경되었습니다\r\n";
+                                        richTextBox.Text += Serial.ToString("X4") + "->" + tempserial.ToString("X4") + "\r\n\r\n";
+                                        m_Main.ReadTageData(ref richTextBox);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                         LogSaveBtn.Enabled = true;
                         SerialRandom.Enabled = true;
                     }
@@ -300,6 +391,98 @@ namespace RF_Tag_Reader
                     }     
                     else
                     {
+                         if(m_Main.RFTag == Main_cls.RFTagTypeList.M9WK)
+                        {
+                            int Serial = (int)((m_Main.M9WK_PageReadData[(int)Main_cls.RFTagPageList.Page08,0]<<8) | (m_Main.M9WK_PageReadData[(int)Main_cls.RFTagPageList.Page08,1]));
+                            for(int i =0;i<m_Main.SerialListData.Count;i++)
+                            {
+                                if((Serial == ((m_Main.SerialListData[i].RFSerial[1] << 8) |m_Main.SerialListData[i].RFSerial[0])) && (m_Main.SerialListData[i].RFType == Main_cls.RFTagTypeList.M9WK))
+                                {
+                                    string MessageStr = "[" + m_Main.SerialListData[i].LampSerial + "]  " + m_Main.SerialListData[i].SuppliedDate.ToString("yy.MM.dd")
+                                                       + "\r\n출하한 제품과 Serial이 중폭됩니다.\r\nSerial 변경을 진행하시겠습니까?";
+                                    if(MessageBox.Show(MessageStr,"Warning", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                                    {
+                                        byte[] tempdata = new byte[m_Main.M9WK_PageReadData.GetLength(1)];
+                                        for(int k=0;k<m_Main.M9WK_PageReadData.GetLength(1);k++)
+                                        {
+                                            tempdata[k] = m_Main.M9WK_PageReadData[(int)Main_cls.RFTagPageList.Page08,k];
+                                        }
+                                        bool randomflag = false;
+                                        Random random = new Random();
+                                        int tempserial = 0x00;
+                                        do
+                                        {
+                                            randomflag = false;
+                                            tempserial = random.Next(100, 0xffff);
+                                            tempserial &= 0xff0f;
+                                            tempserial |= (Serial & 0x00f0);
+                                            for(int l=0;l<m_Main.SerialListData.Count;l++)
+                                            {
+                                                if(tempserial == ((m_Main.SerialListData[i].RFSerial[1] << 8) |m_Main.SerialListData[i].RFSerial[0]))
+                                                {
+                                                    randomflag = true;
+                                                }
+                                            }
+                                        }while(randomflag);
+
+                                        tempdata[0] = (byte)((tempserial & 0xff00)>>8);
+                                        tempdata[1] = (byte)((tempserial & 0x00ff)>>0);
+
+                                        m_Main.M9WK_PageWrite(Main_cls.RFTagPageList.Page08,tempdata);
+                                        richTextBox.Text += "\r\nSerial이 변경되었습니다\r\n";
+                                        richTextBox.Text += Serial.ToString("X4") + "->" + tempserial.ToString("X4") + "\r\n\r\n";
+                                        m_Main.ReadTageData(ref richTextBox);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        else if(m_Main.RFTag == Main_cls.RFTagTypeList.W9WK)
+                        {
+                            int Serial = (int)((m_Main.W9Wk_ReadData[0]<<8) | (m_Main.W9Wk_ReadData[1]));
+                            for(int i =0;i<m_Main.SerialListData.Count;i++)
+                            {
+                                if((Serial == ((m_Main.SerialListData[i].RFSerial[1] << 8) |m_Main.SerialListData[i].RFSerial[0])) && (m_Main.SerialListData[i].RFType == Main_cls.RFTagTypeList.W9WK))
+                                {
+                                    string MessageStr = "[" + m_Main.SerialListData[i].LampSerial + "]  " + m_Main.SerialListData[i].SuppliedDate.ToString("yy.MM.dd")
+                                                       + "\r\n출하한 제품과 Serial이 중폭됩니다.\r\nSerial 변경을 진행하시겠습니까?";
+                                    if(MessageBox.Show(MessageStr,"Warㅜing", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                                    {
+                                        byte[] tempdata = new byte[m_Main.W9Wk_ReadData.GetLength(0)];
+                                        for(int k=0;k<m_Main.W9Wk_ReadData.GetLength(0);k++)
+                                        {
+                                            tempdata[k] = m_Main.W9Wk_ReadData[k];
+                                        }
+                                        bool randomflag = false;
+                                        Random random = new Random();
+                                        int tempserial = 0x00;
+                                        do
+                                        {
+                                            randomflag = false;
+                                            tempserial = random.Next(100, 0xffff);
+                                            tempserial &= 0xff0f;
+                                            tempserial |= (Serial & 0x00f0);
+                                            for(int l=0;l<m_Main.SerialListData.Count;l++)
+                                            {
+                                                if(tempserial == ((m_Main.SerialListData[i].RFSerial[1] << 8) |m_Main.SerialListData[i].RFSerial[0]))
+                                                {
+                                                    randomflag = true;
+                                                }
+                                            }
+                                        }while(randomflag);
+
+                                        tempdata[0] = (byte)((tempserial & 0xff00)>>8);
+                                        tempdata[1] = (byte)((tempserial & 0x00ff)>>0);
+
+                                        m_Main.W9WKWriteData(tempdata);
+                                        richTextBox.Text += "\r\nSerial이 변경되었습니다\r\n";
+                                        richTextBox.Text += Serial.ToString("X4") + "->" + tempserial.ToString("X4") + "\r\n\r\n";
+                                        m_Main.ReadTageData(ref richTextBox);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                         LogSaveBtn.Enabled = true;
                         SerialRandom.Enabled = true;
                         if(AutoInc.Checked)

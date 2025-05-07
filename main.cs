@@ -79,7 +79,8 @@ namespace RF_Tag_Reader
         public (bool, string) LogDataSaveFunc(string Description, string FilePath)
         {
             SerialIDCls tempcls = new SerialIDCls();
-            tempcls.LogFilePath = Path.GetFileName(FilePath); 
+            //tempcls.LogFilePath = Path.GetFileName(FilePath); 
+            tempcls.LogFilePath = FilePath; 
             tempcls.LampSerial = Path.GetFileNameWithoutExtension(FilePath);
             tempcls.SuppliedDate = File.GetCreationTime(FilePath);
             string[] TextLine = Description.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
@@ -147,7 +148,7 @@ namespace RF_Tag_Reader
             if(!readfail && !readfail2)
             {
                 tempcls.RFSerialBinary = ByteArrayToBinaryString(tempcls.RFSerial);
-                SerialListData.Add(tempcls);
+                SerialListData.Insert(0,tempcls);
             }
             return (true, "");
         }
@@ -162,7 +163,7 @@ namespace RF_Tag_Reader
                 string subFolderName = LogPath + @"\" + DateTime.Now.AddMonths(i+1-ReadMonth).ToString("yyyy_MM");
                 if(Directory.Exists(subFolderName))
                 {   
-                    string[] files = Directory.GetFiles(subFolderName, "*.log").OrderBy(f => File.GetLastWriteTime(f)).ToArray();
+                    string[] files = Directory.GetFiles(subFolderName, "*.log").OrderByDescending(f => File.GetCreationTime(f)).ToArray();
 
                     for(int j=0;j<files.Length;j++)
                     {
@@ -449,11 +450,12 @@ namespace RF_Tag_Reader
                     {
                         if(SeribitSet)
                         {
+                            writebyte[1] = (byte)(M9WK_PageReadData[(int)RFTagPageList.Page08,1] & 0x0f);
                             writebyte[1] = (byte)(M9WK_PageReadData[(int)RFTagPageList.Page08,1] | 0x80);
                         }
                         else if(SerialBitClr)
                         {
-                            writebyte[1] = (byte)(M9WK_PageReadData[(int)RFTagPageList.Page08,1] & 0x3f);
+                            writebyte[1] = (byte)(M9WK_PageReadData[(int)RFTagPageList.Page08,1] & 0x0f);
                         }
                         else
                         {
@@ -571,173 +573,6 @@ namespace RF_Tag_Reader
                         return true;
                     } 
                      
-                break;
-                default:
-                    richtextbox.Clear();
-                    richtextbox.Text += "Error";
-                    richtextbox.BackColor = Color.FromArgb(255,240,240);
-                    return false;
-                break;
-            }
-
-            richtextbox.BackColor = (ErrorFlag)?Color.FromArgb(255,240,240):Color.FromArgb(240,255,240);
-            
-            return ReadError;
-        }
-
-        public bool RFTagSuccessWrite(ref RichTextBox richtextbox, int SettingTime)
-        {
-            bool ReadError, ErrorFlag;
-            RFTagTypeList RFType;
-            int UseTime;
-            (ReadError,ErrorFlag, RFType, UseTime) = ReadTageData(ref richtextbox);
-            if((ReadError)||((RFType != RFTagTypeList.W9WK)&&(RFType != RFTagTypeList.M9WK)))
-            {
-                richtextbox.BackColor = Color.FromArgb(255,240,240);
-                richtextbox.Text += "Data Read Fail!!!";
-                return false;
-            } 
-            int[] startingIdx = new int[4];
-            byte[] M9WK_Buff1 = {0x64, 0x00,0x64,0x00};
-            byte[] M9WK_Buff2 = {0x00, 0x00, 0x64};
-            byte[] W9WK_Buf = {0x00, 0x64, 0x00, 0x64};
-            byte[] writebyte = new byte[8];
-            richtextbox.BackColor = Color.FromArgb(255,255,255);
-
-            switch(RFType)
-            {
-                /*case RFTapTypeList.W9WK:
-                    richtextbox.Text += "\r\nTime " + DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.ff")+" [DataWrite]\r\n";
-
-                    if(debuglist.Debug4)
-                    {
-                        writebyte[0] = (byte)((debuglist.SerialID & 0xff00)>>8);
-                        writebyte[1] = (byte)((debuglist.SerialID & 0x00ff)>>0);
-
-                        richtextbox.Text += "Serial ID = 0x" + (W9Wk_ReadData[0]<<8|W9Wk_ReadData[1]).ToString("x4") + " --> 0x" + debuglist.SerialID.ToString("x4") + "\r\n";
-                    }
-                    else
-                    {
-                        writebyte[0] = W9Wk_ReadData[0];
-                        if(SeribitSet)
-                        {
-                            writebyte[1] = (byte)(W9Wk_ReadData[1] | 0x80);
-                        }
-                        else if(SerialBitClr)
-                        {
-                            writebyte[1] = (byte)(W9Wk_ReadData[1] & 0x3f);
-                        }
-                        else
-                        {
-                            writebyte[1] = (byte)(W9Wk_ReadData[1]);
-                        }
-                    }
-                    writebyte[2] = (byte)(SettingTime & 0x00ff);
-                    writebyte[3] = (byte)((SettingTime & 0xff00)>>8);
-                    richtextbox.Text += "Setting Time = " + SettingTime.ToString() + "Hour\r\n";
-                    if(writebyte[1] != (byte)(W9Wk_ReadData[1]))
-                    {
-                        richtextbox.Text += "Data 1 0x" + W9Wk_ReadData[1].ToString("x2") + "--> 0x" + writebyte[1].ToString("x2") + "\r\n";
-                    }
-                    
-
-                    for(int i =0;i<W9WK_Buf.Length;i++)
-                    {
-                        writebyte[7-i] = W9WK_Buf[i];
-                        if(W9Wk_ReadData[7-i] != W9WK_Buf[i])
-                        {
-                            richtextbox.Text += "Data "+ (i+5).ToString() + " 0x" + W9Wk_ReadData[7-i].ToString("X2") +" --> 0x" + W9WK_Buf[i].ToString("X2") + "\r\n";
-                        }
-                    }
-                    
-                    if(!W9WKWriteData(writebyte))
-                    {
-                         richtextbox.Text += "데이터 쓰기 실패!!";
-                         richtextbox.BackColor = Color.FromArgb(255,240,240);
-                         return false;
-                    }
-                    richtextbox.Text += "\r\nWrite Complete!!\r\n\r\n"; 
-
-                    (ReadError,ErrorFlag, RFType, UseTime) =ReadTageData(ref richtextbox);  
-                    richtextbox.Text += "\r\n";             
-                    if(ReadError) 
-                    {
-                        richtextbox.Text += "Read Fail!!";
-                        richtextbox.BackColor = Color.FromArgb(255,240,240);
-                        return false;
-                    }
-                    else if(ErrorFlag)
-                    {
-                        richtextbox.Text += "Write Error!!";
-                        richtextbox.BackColor = Color.FromArgb(255,240,240);
-                        return false;
-                    } 
-                    else if(UseTime != SettingTime) 
-                    {
-                        richtextbox.Text +=  "장입에러!!!";
-                        richtextbox.BackColor = Color.FromArgb(255,240,240);
-                        return false;
-                    }
-                    else
-                    {
-                        richtextbox.Text += "Write Success\r\n";
-                        richtextbox.BackColor = Color.FromArgb(240,255,240);
-                        return true;
-                    } 
-                break;
-*/
-                case RFTagTypeList.M9WK:
-                    DateTime WriteTimeStamp = DateTime.Now;
-                    int DebugTime = 0x0000;
-                    byte SerialID_0 = (byte)(M9WK_PageReadData[(int)RFTagPageList.Page08,0]);
-                    byte SerialID_1 = (byte)(M9WK_PageReadData[(int)RFTagPageList.Page08,1]);
-                    richtextbox.Text += "\r\nTime " + DateTime.Now.ToString("YYYY/MM/dd HH:mm:ss.ff")+" [DataWrite]\r\n";
-                    TotalCnt = 0;
-                    SuccessCnt = 0;
-                    for(int i =0;i<50;i++)
-                    {
-                        bool FailFlag = false;
-                        byte writeidx = 0;
-                        
-                        writebyte[writeidx++] = SerialID_0;
-                        writebyte[writeidx++] = SerialID_1;
-                        writebyte[writeidx++] = (byte)(DebugTime & 0x00ff);
-                        writebyte[writeidx++] = (byte)((DebugTime & 0xff00)>>8);
-                        writebyte[writeidx++] = 0x88;
-
-                        if(!M9WK_PageWrite(RFTagPageList.Page08,writebyte))
-                        {
-                            richtextbox.Text += "쓰기 실패!! [" + DebugTime.ToString() + "]\r\n";
-                            richtextbox.BackColor = Color.FromArgb(255,240,240);
-                            FailFlag = true;
-                        }
-                        Thread.Sleep(50);
-                        /*if(ReadRFTagPage(RFTagPageList.Page08, RFTapTypeList.M9WK) != RFTapTypeList.M9WK)
-                        {
-                            richtextbox.Text += "읽기 실패!! [" + DebugTime.ToString() + "]\r\n";
-                            richtextbox.BackColor = Color.FromArgb(255,240,240);
-                            FailFlag = true;
-                        }*/
-                        ReadRFTagPage(RFTagPageList.Page08, RFTagTypeList.M9WK);
-                        richtextbox.Text += M9WK_PageReadDataStr[(int)RFTagPageList.Page08] + "\r\n";
-                        if((byte)M9WK_PageReadData[(int)RFTagPageList.Page08,0] != SerialID_0)  FailFlag = true;
-                        if((byte)M9WK_PageReadData[(int)RFTagPageList.Page08,1] != SerialID_1)  FailFlag = true;
-                        if((byte)M9WK_PageReadData[(int)RFTagPageList.Page08,2] != (byte)(DebugTime & 0x00ff))  FailFlag = true;
-                        if((byte)M9WK_PageReadData[(int)RFTagPageList.Page08,3] != (byte)((DebugTime & 0xff00)>>8))  FailFlag = true;
-                        if((byte)M9WK_PageReadData[(int)RFTagPageList.Page08,4] != 0x88)  FailFlag = true;
-
-                        TotalCnt ++;
-                        if(!FailFlag)
-                        {
-                            SuccessCnt ++;
-                        }
-                        DebugTime = DebugTime + 257;
-                        Thread.Sleep(50);
-                    }
-
-                    richtextbox.Text += String.Format("반복 Test 완료 {0}/{1},{2}\r\n",TotalCnt,SuccessCnt,((double)(SuccessCnt/TotalCnt) * 100).ToString("0.00"));
-                    richtextbox.BackColor = Color.FromArgb(255,240,240);
-                    
                 break;
                 default:
                     richtextbox.Clear();

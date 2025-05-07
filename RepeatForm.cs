@@ -3,6 +3,7 @@ using System.CodeDom.Compiler;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Ports;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading;
 using Accessibility;
@@ -18,6 +19,8 @@ namespace RF_Tag_Reader
         private Thread RepeatThread;
         public bool RepeatRunFlag = false;
         private String MessageString = "";
+        private Color richBackColor = Color.FromArgb(255,255,255);
+
         uint[] dummyData = {0x0000, 0xffff, 0x0000, 0xffff, 0xf0f0, 0x0f0f, 0xf0f0, 0x0f0f, 
                             0x0101, 0x0202, 0x0404, 0x0808, 0x1010, 0x2020, 0x4040, 0x8080,
                             0x0101, 0x0202, 0x0404, 0x0808, 0x1010, 0x2020, 0x4040, 0x8080,
@@ -35,8 +38,11 @@ namespace RF_Tag_Reader
             ti.Tick += new EventHandler(UpdateFunc);
             ti.Start();
             this.FormClosing += new FormClosingEventHandler(formclosingFunc);
-            
+            this.SizeChanged += new EventHandler(FormSizeFunc);
+            RichTextBox3.Text = "";
             TextBox8.Text = "";
+
+            FormSizeFunc(null,null);
         }
         private void formclosingFunc(object sender, EventArgs e)
         {
@@ -121,6 +127,7 @@ namespace RF_Tag_Reader
 
                 MessageString += "\r\n";
                 MessageString += String.Format("Total {0} / Success {1}  ==> {2}% \r\n", dummyData.Length,(dummyData.Length - dummyFailCnt), (double)(dummyData.Length - dummyFailCnt)/(double)(dummyData.Length)*100 );
+                richBackColor = (dummyData.Length == (dummyData.Length - dummyFailCnt))?Color.FromArgb(240,255,240):Color.FromArgb(255,240,240);
             }
             if(RFTag == Main_cls.RFTagTypeList.W9WK)
             {
@@ -178,6 +185,7 @@ namespace RF_Tag_Reader
 
                 MessageString += "\r\n";
                 MessageString += String.Format("Total {0} / Success {1}  ==> {2}% \r\n", dummyData.Length,(dummyData.Length - dummyFailCnt), (double)(dummyData.Length - dummyFailCnt)/(double)(dummyData.Length)*100 );
+                richBackColor = (dummyData.Length == (dummyData.Length - dummyFailCnt))?Color.FromArgb(240,255,240):Color.FromArgb(255,240,240);
             }
             
             RepeatRunFlag = false;
@@ -194,11 +202,18 @@ namespace RF_Tag_Reader
             }
             if(Sender == Button5)
             {
+                if(!m_Main.Serial.IsOpen)
+                {
+                    MessageBox.Show("통신연결이 되지 않았습니다");
+                    return;
+                }
+                BackColor = Color.FromArgb(255,255,255);
                 RepeatThread = new Thread(RepeatThreadFunc);
                 RepeatThread.Start();
             }
             if(Sender == Button7)
             {
+                BackColor = Color.FromArgb(255,255,255);
                 RepeatRunFlag = false;
             }
         }
@@ -214,7 +229,7 @@ namespace RF_Tag_Reader
             {
                 if(this.Cursor != Cursors.WaitCursor)
                     this.Cursor = Cursors.WaitCursor;
-                //TextBox8.Text = ((TimeSpan)(Stamp - DateTime.Now)).ToString("mm:ss.fff") + "Sec";
+                TextBox8.Text = ((TimeSpan)(Stamp - DateTime.Now)).ToString(@"mm\:ss\.fff") + "Sec";
             }
             else
             {
@@ -228,6 +243,20 @@ namespace RF_Tag_Reader
                 RichTextBox3.SelectionStart = RichTextBox3.Text.Length;
                 RichTextBox3.ScrollToCaret();
             }
+            RichTextBox3.BackColor = richBackColor;
+            RichTextBox3.Cursor = this.Cursor;
+        }
+        private void FormSizeFunc(Object Sender, EventArgs e)
+        {
+            SplitContainer2.Width = this.Size.Width-210;
+            Button5.Size = new Size(180,80);
+            Button5.Location = new Point(0,0);
+            Button7.Size = new Size(180,80);
+            Button7.Location = new Point(0,90);
+            TextBox8.Size= new Size(180,20);
+            TextBox8.Location = new Point(0,180);
+            Button9.Size = new Size(180,80);
+            Button9.Location = new Point(0,this.Height - 120);
         }
     }
 }
